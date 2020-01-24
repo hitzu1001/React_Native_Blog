@@ -1,31 +1,42 @@
-import React, { useContext } from "react";
-import { View, Text, StyleSheet, FlatList } from "react-native";
-import { Context } from "../context/BlogContext";
+import React, { useContext, useEffect } from 'react';
+import { View, Text, StyleSheet, FlatList, TouchableOpacity } from 'react-native';
+import { Context } from '../context/BlogContext';
 import { FontAwesome } from '@expo/vector-icons'
-import { TouchableOpacity } from "react-native-gesture-handler";
 
 const IndexScreen = ({ navigation }) => {
   // const blogPosts = useContext(BlogContext);
-  const { state, deleteBlogPost } = useContext(Context);
+  const { state, deleteBlogPost, getBlogPosts } = useContext(Context);
+
+  useEffect(() => {
+    getBlogPosts();
+
+    const listener = navigation.addListener('didFocus', () => {
+      getBlogPosts();
+    });
+
+    return () => {
+      listener.remove();
+    };
+  }, []);
+
   return (
     <View>
-      <Text>This is my IndexScreen.</Text>
       <FlatList
         data={state}
         keyExtractor={(blogPost) => blogPost.title}
         renderItem={({ item }) => {
           return (
-            <TouchableOpacity
-              onPress={() => navigation.navigate('Show', { id: item.id })}
-            >
-              <View style={styles.row}>
+            <View style={styles.row}>
+              <TouchableOpacity
+                style={styles.titleTO} 
+                onPress={() => navigation.navigate('Show', { id: item.id })}
+              >
                 <Text style={styles.title}>{item.title} - {item.id}</Text>
-                <TouchableOpacity onPress={() => deleteBlogPost(item.id)}>
-                  <FontAwesome style={styles.deleteIcon} name='trash' />
-                </TouchableOpacity>
-              </View>
-            </TouchableOpacity>
-
+              </TouchableOpacity>
+              <TouchableOpacity onPress={() => deleteBlogPost(item.id)}>
+                <FontAwesome style={styles.deleteIcon} name='trash' />
+              </TouchableOpacity>
+            </View>
           );
         }}
       ></FlatList>
@@ -45,16 +56,25 @@ const styles = StyleSheet.create({
   row: {
     flexDirection: 'row',
     justifyContent: 'space-between',
+    alignItems: 'center',
     paddingVertical: 20,
-    paddingHorizontal: 10,
+    paddingHorizontal: 20,
     borderBottomWidth: 1,
     borderColor: 'lightgray',
+  },
+  titleTO: {
+    flex: 1,
+    // borderWidth: 1,
+    // borderColor: 'red',
   },
   title: {
     fontSize: 18,
   },
   deleteIcon: {
     fontSize: 24,
+    marginLeft: 10,
+    // borderWidth: 1,
+    // borderColor: 'red',
   },
   addIcon: {
     fontSize: 24,
